@@ -6,6 +6,7 @@ using System.Web.Http.OData;
 using Microsoft.Azure.Mobile.Server;
 using FieldEngineerLiteService.DataObjects;
 using FieldEngineerLiteService.Models;
+using Salesforce;
 
 namespace FieldEngineerLiteService.Controllers
 {
@@ -14,8 +15,8 @@ namespace FieldEngineerLiteService.Controllers
         protected override void Initialize(HttpControllerContext controllerContext)
         {
             base.Initialize(controllerContext);
-            FieldEngineerLiteContext context = new FieldEngineerLiteContext();
-            DomainManager = new EntityDomainManager<Job>(context, Request, Services);
+            JobDbContext context = new JobDbContext();
+            DomainManager = new EntityDomainManager<Job>(context, Request, Services, enableSoftDelete: true);
         }
 
         // GET tables/Job
@@ -31,9 +32,12 @@ namespace FieldEngineerLiteService.Controllers
         }
 
         // PATCH tables/Job/48D68C86-6EA6-4C25-AA33-223FC9A27959
-        public Task<Job> PatchJob(string id, Delta<Job> patch)
+        public async Task<Job> PatchJob(string id, Delta<Job> patch)
         {
-            return UpdateAsync(id, patch);
+            Job job = patch.GetEntity();  // get new value
+            await SalesforceClient.UpdateCase("0000" + job.JobNumber, job.Status, job.WorkPerformed);
+
+            return await UpdateAsync(id, patch);
         }
 
         // POST tables/Job

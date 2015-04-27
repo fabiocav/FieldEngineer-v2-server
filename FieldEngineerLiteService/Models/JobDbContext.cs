@@ -7,7 +7,7 @@ using FieldEngineerLiteService.DataObjects;
 
 namespace FieldEngineerLiteService.Models
 {
-    public class FieldEngineerLiteContext : DbContext
+    public class JobDbContext : DbContext
     {
         // You can add custom code to this file. Changes will not be overwritten.
         // 
@@ -21,11 +21,11 @@ namespace FieldEngineerLiteService.Models
         // Web.config, is the same as the service name when hosted in Azure.
         private const string connectionStringName = "Name=MS_TableConnectionString";
 
-        public FieldEngineerLiteContext() : base(connectionStringName)
+        public JobDbContext() : base(connectionStringName)
         {
-        } 
+        }
 
-        public DbSet<Job> DbSetJobs { get; set; }
+        public DbSet<Job> JobsDbSet { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -35,9 +35,8 @@ namespace FieldEngineerLiteService.Models
                 modelBuilder.HasDefaultSchema(schema);
             }
 
-            modelBuilder.Conventions.Add(
-                new AttributeToColumnAnnotationConvention<TableColumnAttribute, string>(
-                    "ServiceTableColumn", (property, attributes) => attributes.Single().ColumnType.ToString()));
+            Database.SetInitializer<JobDbContext>(null);
+            base.OnModelCreating(modelBuilder);
         }
     }
 
