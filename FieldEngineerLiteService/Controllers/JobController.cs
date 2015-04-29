@@ -4,9 +4,16 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.OData;
 using Microsoft.Azure.Mobile.Server;
+using Microsoft.Azure.Mobile.Server.AppService;
 using FieldEngineerLiteService.DataObjects;
 using FieldEngineerLiteService.Models;
 using Salesforce;
+using Microsoft.Azure.Mobile.Server.Security;
+using Microsoft.Azure.Mobile.Security;
+using System;
+using Microsoft.Azure.AppService;
+using Newtonsoft.Json.Linq;
+using System.Configuration;
 
 namespace FieldEngineerLiteService.Controllers
 {
@@ -34,8 +41,16 @@ namespace FieldEngineerLiteService.Controllers
         // PATCH tables/Job/48D68C86-6EA6-4C25-AA33-223FC9A27959
         public async Task<Job> PatchJob(string id, Delta<Job> patch)
         {
+
             Job job = patch.GetEntity();  // get new value
-            await SalesforceClient.UpdateCase("0000" + job.JobNumber, job.Status, job.WorkPerformed);
+            var user = this.User as ServiceUser;
+            var creds = await user.GetIdentityAsync<AzureActiveDirectoryCredentials>();
+            var token = this.Request.Headers.GetValues("x-zumo-auth").First();
+            SalesforceClient client = new SalesforceClient(false);
+            client.SetUser(user.Id, token);
+            this.Services.Log.Info("Patch: userId: " + user.Id + ", token:" + token);            
+
+            await client.UpdateCase( "0000" + job.JobNumber, job.Status, job.WorkPerformed);
 
             return await UpdateAsync(id, patch);
         }

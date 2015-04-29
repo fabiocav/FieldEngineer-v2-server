@@ -25,7 +25,8 @@ namespace DbSyncWebJob
 
         static void Sync()
         {
-            Task<IEnumerable<Case>> task = SalesforceClient.GetActiveCases(null);
+            SalesforceClient client = new SalesforceClient(true);
+            Task<IEnumerable<Case>> task = client.GetActiveCases(null);
             task.Wait();
             IEnumerable<Case> cases = task.Result;
 

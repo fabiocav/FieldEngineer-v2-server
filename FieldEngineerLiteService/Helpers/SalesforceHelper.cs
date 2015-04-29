@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Azure.AppService;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Salesforce.Common;
 using Salesforce.Common.Models;
@@ -6,6 +7,7 @@ using Salesforce.Force;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
@@ -29,25 +31,89 @@ namespace Salesforce
         public string Status {get; set;}
     }
 
-    public static class SalesforceClient
+    public class SalesforceClient
     {
-        static public async Task<ForceClient> GetClient()
+        bool isWebJob = false;
+        public string _userid;
+        public string _zumotoken;
+        string UserId { get { return _userid; } }
+        string ZumoToken { get { return _zumotoken; } }
+        ForceClient _client = null;
+
+        public SalesforceClient (bool isWebJob)
         {
+            this.isWebJob = isWebJob;
+        }
+        public void SetUser(string userid, string zumotoken)
+        {
+            this._userid = userid;
+            this._zumotoken = zumotoken;
+        }
+        internal async Task<ForceClient> GetClientForWebJob()
+        {
+
             var consumerkey = ConfigurationManager.AppSettings["ConsumerKey"];
             var consumersecret = ConfigurationManager.AppSettings["ConsumerSecret"];
             var user = ConfigurationManager.AppSettings["User"];
             var password = ConfigurationManager.AppSettings["Password"];
-
+            
+            
             var auth = new AuthenticationClient();
-
             await auth.UsernamePasswordAsync(consumerkey, consumersecret, user, password);
-            var client = new ForceClient(auth.InstanceUrl, auth.AccessToken, auth.ApiVersion); 
-            Console.WriteLine("Connected to Salesforce"); 
- 
+            
+            var client = new ForceClient(auth.InstanceUrl, auth.AccessToken, auth.ApiVersion);
+            Console.WriteLine("Connected to Salesforce, apiVersion:" + auth.ApiVersion);
+
             return client;
+
         }
+        internal async Task<ForceClient> GetClientForApp()
+        {
+            
+            var gatewayUrl = ConfigurationManager.AppSettings["emA_RuntimeUrl"];
+            
+
+            AppServiceClient appServiceClient = new AppServiceClient(gatewayUrl);
+            appServiceClient.SetCurrentUser(this.UserId, this.ZumoToken);
+            var gateway = appServiceClient.CreateApiAppClient(new System.Uri(gatewayUrl));
+            var result = await gateway.GetAsync(String.Format("/api/tokens?api-version=2015-01-14&tokenName={0}", "salesforce"));
+            var jsonString = await result.Content.ReadAsStringAsync();
+            JToken json = JToken.Parse(jsonString);
+            if (json["Properties"] == null)
+            {
+                return null;
+            }
+
+            var accessToken = json["Properties"]["AccessToken"].ToString();
+            var instanceUrl = json["Properties"]["InstanceUrl"].ToString();
+            var apiVersion = "v32.0"; //need to get dynamically
+            Debug.WriteLine("App Service Token:" + jsonString);
+            
+            
+            var client = new ForceClient(instanceUrl, accessToken, apiVersion);
+            Console.WriteLine("Connected to Salesforce, apiVersion:" + apiVersion);
+
+            return client;
+            
+
+        }
+        public async Task<ForceClient> GetClient()
+        {
+            if (_client != null) return _client;
+            if (isWebJob == true)
+            {
+                _client =  await GetClientForWebJob();
+            }
+            else
+            {
+                _client = await GetClientForApp();
+            }
+            return _client;
+        }
+            
+            
         
-        static public async Task<string> InsertComment(string caseRecordId, string comment)
+         public async Task<string> InsertComment(string caseRecordId, string comment)
         {
             ForceClient client = await GetClient();
             dynamic caseComment = new ExpandoObject();
@@ -57,7 +123,7 @@ namespace Salesforce
 
         }
         
-        static public async Task<string> UpdateCase(string caseNumber, string status, string internalComments)
+         public async Task<string> UpdateCase(string caseNumber, string status, string internalComments)
         {
             status = MapMobileStatus(status);
             var client = await GetClient();
@@ -76,7 +142,7 @@ namespace Salesforce
             return response.Success;
         }
 
-        static private async Task<string> GetCase(string caseNumber)
+         private async Task<string> GetCase(string caseNumber)
         {
             ForceClient client = await GetClient();
 
@@ -91,7 +157,7 @@ namespace Salesforce
             return cases.Records.First().Id;
         }
 
-        static public async Task<IEnumerable<Case>> GetActiveCases(string caseNumber)
+         public async Task<IEnumerable<Case>> GetActiveCases(string caseNumber)
         {
             string customers = ConfigurationManager.AppSettings["customers"];
             ForceClient client = await GetClient();
