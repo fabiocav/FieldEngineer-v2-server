@@ -7,6 +7,8 @@ using Microsoft.Azure.Mobile.Server;
 using FieldEngineerLiteService.DataObjects;
 using FieldEngineerLiteService.Models;
 using Salesforce;
+using System.Net;
+using System.Net.Http;
 
 namespace FieldEngineerLiteService.Controllers
 {
@@ -34,10 +36,30 @@ namespace FieldEngineerLiteService.Controllers
         // PATCH tables/Job/48D68C86-6EA6-4C25-AA33-223FC9A27959
         public async Task<Job> PatchJob(string id, Delta<Job> patch)
         {
-            Job job = patch.GetEntity();  // get new value
-            await SalesforceClient.UpdateCase("0000" + job.JobNumber, job.Status, job.WorkPerformed);
+            try 
+            {
+                var result = await UpdateAsync(id, patch);
+                await SalesforceClient.UpdateCase("0000" + result.JobNumber, result.Status, result.WorkPerformed);
 
-            return await UpdateAsync(id, patch);
+                return result;
+            }
+
+            catch (HttpResponseException e)
+            {
+                if (e.Response != null && e.Response.StatusCode == HttpStatusCode.PreconditionFailed)
+                {
+                    // Handle conflict
+                    var content = e.Response.Content as ObjectContent;
+                    Job serverItem = (Job)content.Value;
+
+                    Services.Log.Info("Server wins" + serverItem.JobNumber);
+                    return serverItem;
+                }
+                else
+                {
+                    throw e;
+                }
+            }
         }
 
         // POST tables/Job

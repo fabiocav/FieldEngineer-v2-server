@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FieldEngineerLiteService.Models;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace DbSyncWebJob
 {
@@ -58,6 +60,11 @@ namespace DbSyncWebJob
                             StartTime = "13:00",
                             EndTime = "14:00"
                         });
+
+                    if (customer.Contains("Donna"))
+                    {
+                        SendNotification(title);
+                    }
                 }
                 else
                 {
@@ -81,6 +88,25 @@ namespace DbSyncWebJob
             db.SaveChanges();
 
             Console.WriteLine("WebJob ran at: " + DateTime.Now.ToString());
+        }
+
+        private static void SendNotification(string title)
+        {
+            try {
+                Console.WriteLine("Sending push for job: " + title);
+
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var message = new JObject(new JProperty("toast", "Appointment confirmed: " + title));
+                var requestUri = "http://donnam-logic-push.azure-mobile.net/api/notifyAllUsers";
+
+                client.PostAsJsonAsync(requestUri, message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
     }
