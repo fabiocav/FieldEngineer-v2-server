@@ -42,15 +42,15 @@ namespace FieldEngineerLiteService.Controllers
         public async Task<Job> PatchJob(string id, Delta<Job> patch)
         {
 
-            Job job = patch.GetEntity();  // get new value
-            var user = this.User as ServiceUser;
-            var creds = await user.GetIdentityAsync<AzureActiveDirectoryCredentials>();
-            var token = this.Request.Headers.GetValues("x-zumo-auth").First();
-            SalesforceClient client = new SalesforceClient(false);
-            client.SetUser(user.Id, token);
-            this.Services.Log.Info("Patch: userId: " + user.Id + ", token:" + token);            
+            //Job job = patch.GetEntity();  // get new value
+            //var user = this.User as ServiceUser;
+            //var creds = await user.GetIdentityAsync<AzureActiveDirectoryCredentials>();
+            //var token = this.Request.Headers.GetValues("x-zumo-auth").First();
+            //SalesforceClient client = new SalesforceClient(false);
+            //client.SetUser(user.Id, token);
+            //this.Services.Log.Info("Patch: userId: " + user.Id + ", token:" + token);            
 
-            await client.UpdateCase( "0000" + job.JobNumber, job.Status, job.WorkPerformed);
+            //await client.UpdateCase( "0000" + job.JobNumber, job.Status, job.WorkPerformed);
 
             return await UpdateAsync(id, patch);
         }

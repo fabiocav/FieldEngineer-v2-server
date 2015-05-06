@@ -252,7 +252,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Properties\PublishProfiles\FabioEngineerLite2-code.pubxml" />
+    <None Include="Properties\PublishProfiles\FabioFieldEngineerLite-code.pubxml" />
     <None Include="Properties\PublishProfiles\fetechnician-code.pubxml" />
+    <None Include="Properties\PublishProfiles\FieldEngineerFiles-code.pubxml" />
     <None Include="Properties\PublishProfiles\FieldEngineerLite-code.pubxml" />
     <Content Include="Properties\webjobs-list.json" />
   </ItemGroup>

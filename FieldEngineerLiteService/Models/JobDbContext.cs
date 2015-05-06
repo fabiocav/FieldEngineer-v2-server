@@ -20,7 +20,7 @@ namespace FieldEngineerLiteService.Models
         // service name, set by the 'MS_MobileServiceName' AppSettings in the local 
         // Web.config, is the same as the service name when hosted in Azure.
         private const string connectionStringName = "Name=MS_TableConnectionString";
-
+        
         public JobDbContext() : base(connectionStringName)
         {
         }
