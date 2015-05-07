@@ -86,7 +86,7 @@ namespace FieldEngineerLiteService.Controllers
             return DeleteAsync(id);
         }
 
-        [HttpPost()]
+        [HttpPost]
         [Route("tables/Job/{id}/StorageToken")]
         public async Task<HttpResponseMessage> PostStorageTokenRequest(string id, [FromBody]StorageTokenRequest value)
         {
@@ -103,7 +103,7 @@ namespace FieldEngineerLiteService.Controllers
         }
 
         // Get the files associated with this record
-        [HttpGet()]
+        [HttpGet]
         [Route("tables/Job/{id}/MobileServiceFiles")]
         public async Task<HttpResponseMessage> GetFiles(string id)
         {
@@ -117,6 +117,21 @@ namespace FieldEngineerLiteService.Controllers
             IEnumerable<IListBlobItem> blobs = container.ListBlobs(blobListingDetails: BlobListingDetails.Metadata);
             IEnumerable<MobileServiceFile> files = blobs.OfType<CloudBlockBlob>().Select(b => MobileServiceFile.FromBlobItem(b, "Job", id));
             return Request.CreateResponse(files);
+        }
+
+        [HttpDelete]
+        [Route("tables/Job/{id}/MobileServiceFiles/{name}")]
+        public async Task GetFiles(string id, string name)
+        {
+            ServiceUser user = this.User as ServiceUser;
+
+            // Validate user and request
+
+            string containerName = GetContainerNameForRequest(id);
+            CloudBlobContainer container = GetRecordContainer(containerName);
+
+            CloudBlob blob = container.GetBlobReference(name);
+            await blob.DeleteIfExistsAsync();
         }
 
         protected virtual bool IsTokenRequestValid(StorageTokenRequest request, ServiceUser user)
