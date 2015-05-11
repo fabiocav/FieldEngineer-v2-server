@@ -244,6 +244,8 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\JobController.cs" />
+    <Compile Include="Controllers\JobStorageController.cs" />
+    <Compile Include="Controllers\StorageController.cs" />
     <Compile Include="DataObjects\Job.cs" />
     <Compile Include="Files\StoragePermissions.cs" />
     <Compile Include="Files\StorageToken.cs" />
