@@ -207,6 +207,10 @@ namespace FieldEngineerLiteService.Controllers
 
         public string ParentDataItemId { get; set; }
 
+        public string ContentMD5 { get; set; }
+
+        public long Length { get; set; }
+
         public IDictionary<string, string> Metadata { get; set; }
 
         public static MobileServiceFile FromBlobItem(CloudBlockBlob item, string parentEntityType, string parentEntityId)
@@ -217,6 +221,8 @@ namespace FieldEngineerLiteService.Controllers
                 Name = item.Name,
                 ParentDataItemType = parentEntityType,
                 ParentDataItemId = parentEntityId,
+                Length = item.Properties.Length,
+                ContentMD5 = item.Properties.ContentMD5,
                 Metadata = item.Metadata
             };
         }
