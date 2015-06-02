@@ -19,6 +19,7 @@ using FieldEngineerLiteService.Files;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace FieldEngineerLiteService.Controllers
 {
@@ -197,36 +198,5 @@ namespace FieldEngineerLiteService.Controllers
         //}
     }
 
-    public class MobileServiceFile
-    {
-        public string Id { get; set; }
-
-        public string Name { get; set; }
-
-        public string ParentDataItemType { get; set; }
-
-        public string ParentDataItemId { get; set; }
-
-        public string ContentMD5 { get; set; }
-
-        public long Length { get; set; }
-
-        public IDictionary<string, string> Metadata { get; set; }
-
-        public static MobileServiceFile FromBlobItem(CloudBlockBlob item, string parentEntityType, string parentEntityId)
-        {
-            return new MobileServiceFile
-            {
-                Id = item.Uri.ToString(),
-                Name = item.Name,
-                ParentDataItemType = parentEntityType,
-                ParentDataItemId = parentEntityId,
-                Length = item.Properties.Length,
-                ContentMD5 = item.Properties.ContentMD5,
-                Metadata = item.Metadata
-            };
-        }
-    }
-
-
+    
 }

@@ -13,5 +13,7 @@ namespace FieldEngineerLiteService.Files
         public string EntityId { get; set; }
 
         public StoragePermissions Permissions { get; set; }
+
+        public StorageTokenScope Scope { get; set; }
     }
 }

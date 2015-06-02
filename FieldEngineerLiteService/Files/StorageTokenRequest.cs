@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FieldEngineerLiteService.DataObjects;
 
 namespace FieldEngineerLiteService.Files
 {
@@ -11,6 +12,8 @@ namespace FieldEngineerLiteService.Files
         public StoragePermissions Permissions { get; set; }
 
         public string ProviderName { get; set; }
+
+        public MobileServiceFile TargetFile { get; set; }
     }
 
 }

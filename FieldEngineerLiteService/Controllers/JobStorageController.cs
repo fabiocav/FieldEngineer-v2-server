@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FieldEngineerLiteService.DataObjects;
 using FieldEngineerLiteService.Files;
+using System.Text.RegularExpressions;
 
 
 namespace FieldEngineerLiteService.Controllers
@@ -15,24 +16,45 @@ namespace FieldEngineerLiteService.Controllers
     {
         [HttpPost]
         [Route("tables/Job/{id}/StorageToken")]
-        public override Task<HttpResponseMessage> PostStorageTokenRequest(string id, StorageTokenRequest value)
+        public async Task<HttpResponseMessage> PostStorageTokenRequest(string id, StorageTokenRequest value)
         {
-            return base.PostStorageTokenRequest(id, value);
+            // For this example, we're trusting the metadata provided by the client... 
+            // In this step, we'd validate the credentials and the metadata before requesting the SAS
+            bool isServiceContractRequest = value.TargetFile.Metadata != null &&
+                value.TargetFile.Metadata.ContainsKey("isServiceContract") &&
+                string.Compare(value.TargetFile.Metadata["isServiceContract"], "true", true) == 0;
+
+            StorageToken token = await GetStorageTokenAsync(id, value, new CustomContainerNameResolver(isServiceContractRequest));
+
+            return Request.CreateResponse(token);
         }
 
         // Get the files associated with this record
         [HttpGet]
         [Route("tables/Job/{id}/MobileServiceFiles")]
-        public override Task<HttpResponseMessage> GetFiles(string id)
+        public async Task<HttpResponseMessage> GetFiles(string id)
         {
-            return base.GetFiles(id);
+            IEnumerable<MobileServiceFile> files = await GetRecordFilesAsync(id, new CustomContainerNameResolver(true));
+
+            return Request.CreateResponse(files);
         }
 
         [HttpDelete]
         [Route("tables/Job/{id}/MobileServiceFiles/{name}")]
-        public override Task DeleteFile(string id, string name)
+        public Task Delete(string id, string name)
         {
-            return base.DeleteFile(id, name);
+            bool isServiceContractRequest = IsServiceContractRequest(Request);
+
+            return base.DeleteFileAsync(id, name, new CustomContainerNameResolver(isServiceContractRequest));
+        }
+
+        private bool IsServiceContractRequest(HttpRequestMessage request)
+        {
+            var queryString = Request.GetQueryNameValuePairs()
+                .Where(q => string.Compare(q.Key, "x-zumo-filestoreuri", true) == 0)
+                .FirstOrDefault();
+
+            return Regex.IsMatch(queryString.Value ?? string.Empty, "^\\/?.*-sc\\/");
         }
 
     }

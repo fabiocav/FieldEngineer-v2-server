@@ -29,6 +29,8 @@ namespace FieldEngineerLiteService.Models
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+         //   modelBuilder.Configurations.Add(new MobileServiceFileConfigurationType());
+
             string schema = ServiceSettingsDictionary.GetSchemaName();
             if (!string.IsNullOrEmpty(schema))
             {
@@ -37,6 +39,21 @@ namespace FieldEngineerLiteService.Models
 
             Database.SetInitializer<JobDbContext>(null);
             base.OnModelCreating(modelBuilder);
+        }
+    }
+
+    public class MobileServiceFileConfigurationType : System.Data.Entity.ModelConfiguration.ComplexTypeConfiguration<MobileServiceFile>
+    {
+        public MobileServiceFileConfigurationType()
+        {
+            Ignore(t => t.ContentMD5);
+            Ignore(t => t.Id);
+            Ignore(t => t.Length);
+            Ignore(t => t.Metadata);
+            Ignore(t => t.TableName);
+            Ignore(t => t.ParentId);
+            Ignore(t => t.Name);
+            Property(t => t.FileInfoToken);
         }
     }
 

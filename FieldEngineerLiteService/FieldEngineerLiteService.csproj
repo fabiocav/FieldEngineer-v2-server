@@ -245,17 +245,23 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\JobController.cs" />
     <Compile Include="Controllers\JobStorageController.cs" />
-    <Compile Include="Controllers\StorageController.cs" />
+    <Compile Include="CustomContainerNameResolver.cs" />
+    <Compile Include="Files\Controllers\StorageController.cs" />
     <Compile Include="DataObjects\Job.cs" />
+    <Compile Include="Files\ContainerNameResolver.cs" />
+    <Compile Include="Files\IContainerNameResolver.cs" />
     <Compile Include="Files\StoragePermissions.cs" />
     <Compile Include="Files\StorageToken.cs" />
     <Compile Include="Files\StorageTokenRequest.cs" />
+    <Compile Include="Files\StorageTokenScope.cs" />
     <Compile Include="Helpers\SalesforceHelper.cs" />
+    <Compile Include="Files\IStorageProvider.cs" />
     <Compile Include="Models\JobDbContext.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Files\StorageProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
